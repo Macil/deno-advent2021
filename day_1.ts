@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.140.0/testing/asserts.ts";
-import { solver } from "./aocm.ts";
+import { runPart } from "./aocm.ts";
 
 function part1(input: string) {
   const numbers = input.trim().split("\n").map(Number);
@@ -25,8 +25,10 @@ function part2(input: string) {
   return count;
 }
 
-solver(2021, 1, 1, part1);
-solver(2021, 1, 2, part2);
+if (import.meta.main) {
+  runPart(2021, 1, 1, part1);
+  runPart(2021, 1, 2, part2);
+}
 
 const TEST_INPUT = `
 199

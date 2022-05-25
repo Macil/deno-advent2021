@@ -3,113 +3,64 @@ import { memoizy } from "https://deno.land/x/memoizy@1.0.0/mod.ts";
 import { DB } from "https://deno.land/x/sqlite@v3.4.0/mod.ts";
 import cacheDir from "https://deno.land/x/cache_dir@v0.1.1/mod.ts";
 
-type Answer = string | number;
+export type Answer = string | number;
 
 export type Solver = (input: string) => Answer | Promise<Answer>;
 
-interface Config {
-  run: boolean;
+export interface Config {
   submit: boolean;
   concurrency: boolean;
   resultsInOrder: boolean;
 }
 
-let config: Config | undefined;
 const defaultConfig: Config = {
-  run: false,
   submit: false,
   concurrency: false,
   resultsInOrder: true,
 };
 
-export function initFromArgs() {
-  // TODO add --help argument support
-  // TODO error on unknown arguments
-  const parsedArgs = parse(Deno.args, { boolean: ["r", "run", "s", "submit"] });
-  const submit = Boolean(parsedArgs.s || parsedArgs.submit);
-  const run = Boolean(parsedArgs.r || parsedArgs.run);
-  config = { ...defaultConfig, run, submit };
-}
+let singleton: Aocm | undefined;
 
-export function init(config_: Partial<Config>) {
-  config = { ...defaultConfig, ...config_ };
-}
-
-let tasksComplete = Promise.resolve();
-
-const getSessionCookie = memoizy((): string => {
-  const AOC_SESSION = Deno.env.get("AOC_SESSION");
-  if (!AOC_SESSION) {
-    throw new Error("Could not find Advent of Code session cookie");
+export function getAocm(): Aocm {
+  if (!singleton) {
+    const parsedArgs = parse(Deno.args, {
+      boolean: ["s", "submit"],
+    });
+    singleton = new Aocm({
+      submit: Boolean(parsedArgs.s || parsedArgs.submit),
+    });
   }
-  return AOC_SESSION;
-});
-
-const getDb = memoizy(async () => {
-  const dbDir = cacheDir() + "/aocm";
-  await Deno.mkdir(dbDir, { recursive: true });
-  const db = new DB(dbDir + "/test.db");
-  db.query(`
-    CREATE TABLE IF NOT EXISTS inputs (
-      year INTEGER NOT NULL,
-      day INTEGER NOT NULL,
-      input TEXT,
-      PRIMARY KEY (year, day)
-    )
-  `);
-  return db;
-});
-
-async function fetchInput(year: number, day: number): Promise<string> {
-  console.log("fetching from network...", year, day);
-  const AOC_SESSION = getSessionCookie();
-  const req = await fetch(
-    `https://adventofcode.com/${year}/day/${day}/input`,
-    { headers: { Cookie: `session=${AOC_SESSION}` } },
-  );
-  if (!req.ok) {
-    throw new Error(`Bad response: ${req.status}`);
-  }
-  return req.text();
+  return singleton;
 }
 
-export const getInput = memoizy(
-  async (year: number, day: number): Promise<string> => {
-    const db = await getDb();
-    const cachedResults = db.query<[string]>(
-      "SELECT input FROM inputs WHERE year = ? AND day = ?",
-      [year, day],
-    );
-    if (cachedResults[0]) {
-      return cachedResults[0][0];
-    }
-
-    const input = await fetchInput(year, day);
-    db.query("INSERT INTO inputs (year, day, input) VALUES (?, ?, ?)", [
-      year,
-      day,
-      input,
-    ]);
-    return input;
-  },
-);
-
-export async function solver(
+export function runPart(
   year: number,
   day: number,
   part: number,
   solver: Solver,
-): Promise<void> {
-  if (!config) {
-    initFromArgs();
+) {
+  return getAocm().runPart(year, day, part, solver);
+}
+
+export class Aocm {
+  private config: Config;
+  private tasksComplete = Promise.resolve();
+
+  constructor(config: Partial<Config>) {
+    this.config = { ...defaultConfig, ...config };
   }
-  const config_ = config!;
-  if (config_.run || config_.submit) {
-    if (config_.submit) {
+
+  async runPart(
+    year: number,
+    day: number,
+    part: number,
+    solver: Solver,
+  ): Promise<void> {
+    if (this.config.submit) {
       // TODO
       console.warn("Answer submitting is not implemented yet");
     }
-    const inputPromise = getInput(year, day);
+    const inputPromise = this.getInput(year, day);
     let runAndGetResultShower = async (): Promise<() => void> => {
       const input = await inputPromise;
       const answer = await solver(input);
@@ -119,19 +70,77 @@ export async function solver(
       };
     };
 
-    if (config_.concurrency && !config_.resultsInOrder) {
+    if (this.config.concurrency && !this.config.resultsInOrder) {
       const showResult = await runAndGetResultShower();
       showResult();
     } else {
-      if (config_.resultsInOrder) {
+      if (this.config.resultsInOrder) {
         const showResultPromise = runAndGetResultShower();
         runAndGetResultShower = () => showResultPromise;
       }
-      tasksComplete = tasksComplete.then(async () => {
+      this.tasksComplete = this.tasksComplete.then(async () => {
         const showResult = await runAndGetResultShower();
         showResult();
       });
-      await tasksComplete;
+      await this.tasksComplete;
     }
   }
+
+  private readonly getSessionCookie = memoizy((): string => {
+    const AOC_SESSION = Deno.env.get("AOC_SESSION");
+    if (!AOC_SESSION) {
+      throw new Error("Could not find Advent of Code session cookie");
+    }
+    return AOC_SESSION;
+  });
+
+  private readonly getDb = memoizy(async () => {
+    const dbDir = cacheDir() + "/aocm";
+    await Deno.mkdir(dbDir, { recursive: true });
+    const db = new DB(dbDir + "/test.db");
+    db.query(`
+      CREATE TABLE IF NOT EXISTS inputs (
+        year INTEGER NOT NULL,
+        day INTEGER NOT NULL,
+        input TEXT,
+        PRIMARY KEY (year, day)
+      )
+    `);
+    return db;
+  });
+
+  private async fetchInput(year: number, day: number): Promise<string> {
+    const url = `https://adventofcode.com/${year}/day/${day}/input`;
+    console.warn(`Fetching ${url}`);
+    const AOC_SESSION = this.getSessionCookie();
+    const req = await fetch(
+      url,
+      { headers: { Cookie: `session=${AOC_SESSION}` } },
+    );
+    if (!req.ok) {
+      throw new Error(`Bad response: ${req.status}`);
+    }
+    return req.text();
+  }
+
+  readonly getInput = memoizy(
+    async (year: number, day: number): Promise<string> => {
+      const db = await this.getDb();
+      const cachedResults = db.query<[string]>(
+        "SELECT input FROM inputs WHERE year = ? AND day = ?",
+        [year, day],
+      );
+      if (cachedResults[0]) {
+        return cachedResults[0][0];
+      }
+
+      const input = await this.fetchInput(year, day);
+      db.query("INSERT INTO inputs (year, day, input) VALUES (?, ?, ?)", [
+        year,
+        day,
+        input,
+      ]);
+      return input;
+    },
+  );
 }
