@@ -97,7 +97,7 @@ export class Aocm {
   private readonly getDb = memoizy(async () => {
     const dbDir = cacheDir() + "/aocm";
     await Deno.mkdir(dbDir, { recursive: true });
-    const db = new DB(dbDir + "/test.db");
+    const db = new DB(dbDir + "/main.db");
     db.query(`
       CREATE TABLE IF NOT EXISTS inputs (
         year INTEGER NOT NULL,
