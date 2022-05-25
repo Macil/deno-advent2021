@@ -1,5 +1,7 @@
 import { parse } from "https://deno.land/std@0.140.0/flags/mod.ts";
 import { memoizy } from "https://deno.land/x/memoizy@1.0.0/mod.ts";
+import { DB } from "https://deno.land/x/sqlite@v3.4.0/mod.ts";
+import cacheDir from "https://deno.land/x/cache_dir@v0.1.1/mod.ts";
 
 type Answer = string | number;
 
@@ -43,18 +45,54 @@ const getSessionCookie = memoizy((): string => {
   return AOC_SESSION;
 });
 
-export const fetchInput: (year: number, day: number) => Promise<string> =
-  memoizy(async (year: number, day: number) => {
-    const AOC_SESSION = getSessionCookie();
-    const req = await fetch(
-      `https://adventofcode.com/${year}/day/${day}/input`,
-      { headers: { Cookie: `session=${AOC_SESSION}` } },
+const getDb = memoizy(async () => {
+  const dbDir = cacheDir() + "/aocm";
+  await Deno.mkdir(dbDir, { recursive: true });
+  const db = new DB(dbDir + "/test.db");
+  db.query(`
+    CREATE TABLE IF NOT EXISTS inputs (
+      year INTEGER NOT NULL,
+      day INTEGER NOT NULL,
+      input TEXT,
+      PRIMARY KEY (year, day)
+    )
+  `);
+  return db;
+});
+
+async function fetchInput(year: number, day: number): Promise<string> {
+  console.log("fetching from network...", year, day);
+  const AOC_SESSION = getSessionCookie();
+  const req = await fetch(
+    `https://adventofcode.com/${year}/day/${day}/input`,
+    { headers: { Cookie: `session=${AOC_SESSION}` } },
+  );
+  if (!req.ok) {
+    throw new Error(`Bad response: ${req.status}`);
+  }
+  return req.text();
+}
+
+export const getInput = memoizy(
+  async (year: number, day: number): Promise<string> => {
+    const db = await getDb();
+    const cachedResults = db.query<[string]>(
+      "SELECT input FROM inputs WHERE year = ? AND day = ?",
+      [year, day],
     );
-    if (!req.ok) {
-      throw new Error(`Bad response: ${req.status}`);
+    if (cachedResults[0]) {
+      return cachedResults[0][0];
     }
-    return req.text();
-  });
+
+    const input = await fetchInput(year, day);
+    db.query("INSERT INTO inputs (year, day, input) VALUES (?, ?, ?)", [
+      year,
+      day,
+      input,
+    ]);
+    return input;
+  },
+);
 
 export async function solver(
   year: number,
@@ -67,7 +105,7 @@ export async function solver(
   }
   const config_ = config!;
   if (config_.run || config_.submit) {
-    const inputPromise = fetchInput(year, day);
+    const inputPromise = getInput(year, day);
     let runAndGetResultShower = async (): Promise<() => void> => {
       const input = await inputPromise;
       const answer = await solver(input);
