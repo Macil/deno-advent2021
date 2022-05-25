@@ -105,6 +105,10 @@ export async function solver(
   }
   const config_ = config!;
   if (config_.run || config_.submit) {
+    if (config_.submit) {
+      // TODO
+      console.warn("Answer submitting is not implemented yet");
+    }
     const inputPromise = getInput(year, day);
     let runAndGetResultShower = async (): Promise<() => void> => {
       const input = await inputPromise;
