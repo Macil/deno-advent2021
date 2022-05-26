@@ -7,6 +7,19 @@ await new Command()
   .description("Helper tool for solving Advent of Code with Deno")
   .version("0.1.0")
   .command(
+    "init",
+    "Initialize a project directory",
+  )
+  .arguments("<year:number>")
+  .action(() => {
+    throw new Error("Not implemented yet"); // TODO
+  })
+  .command(
+    "start",
+    "Create a script from a template for solving a day's challenge",
+  )
+  .arguments("<day:number>")
+  .command(
     "set-cookie",
     "Set the Advent of Code session cookie for later calls",
   )
@@ -16,7 +29,7 @@ await new Command()
   })
   .command("clear-data", "Forget the session cookie and cached inputs")
   .action(() => {
-    throw new Error("Not implemented yet");
+    throw new Error("Not implemented yet"); // TODO
   })
   .command("get-input", "View the input for a specific day's challenge")
   .arguments("<year:number> <day:number>")
@@ -31,6 +44,6 @@ await new Command()
   .option("--deno-flags=<flags:string>", "Pass extra flags to Deno")
   .arguments("<script_arg:string>")
   .action((_options, _scriptArg) => {
-    throw new Error("Not implemented yet");
+    throw new Error("Not implemented yet"); // TODO
   })
   .parse(Deno.args);
