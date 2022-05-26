@@ -112,7 +112,9 @@ export class Aocm {
   }
 
   private readonly getMainDb = memoizy(async () => {
-    const dbDir = dataDir() + "/aocm";
+    const dataDir_ = dataDir();
+    if (!dataDir_) throw new Error("Could not find data directory");
+    const dbDir = dataDir_ + "/aocm";
     await Deno.mkdir(dbDir, { recursive: true });
     const db = new DB(dbDir + "/main.db");
     db.query(`
@@ -126,7 +128,9 @@ export class Aocm {
   });
 
   private readonly getCacheDb = memoizy(async () => {
-    const dbDir = cacheDir() + "/aocm";
+    const cacheDir_ = cacheDir();
+    if (!cacheDir_) throw new Error("Could not find cache directory");
+    const dbDir = cacheDir_ + "/aocm";
     await Deno.mkdir(dbDir, { recursive: true });
     const db = new DB(dbDir + "/cache.db");
     db.query(`
