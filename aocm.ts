@@ -2,6 +2,7 @@ import { parse } from "https://deno.land/std@0.140.0/flags/mod.ts";
 import { memoizy } from "https://deno.land/x/memoizy@1.0.0/mod.ts";
 import { DB } from "https://deno.land/x/sqlite@v3.4.0/mod.ts";
 import cacheDir from "https://deno.land/x/cache_dir@v0.1.1/mod.ts";
+import dataDir from "https://deno.land/x/data_dir@v0.1.0/mod.ts";
 
 export type Answer = string | number;
 
@@ -91,7 +92,7 @@ export class Aocm {
     if (AOC_SESSION) {
       return AOC_SESSION;
     }
-    const db = await this.getDb();
+    const db = await this.getMainDb();
     const results = db.query<[string]>("SELECT session FROM sessions LIMIT 1");
     if (results[0]) {
       return results[0][0];
@@ -100,7 +101,7 @@ export class Aocm {
   });
 
   async setSessionCookie(session: string) {
-    const db = await this.getDb();
+    const db = await this.getMainDb();
     db.transaction(() => {
       db.query("INSERT INTO sessions (session) VALUES (?)", [
         session,
@@ -110,8 +111,8 @@ export class Aocm {
     });
   }
 
-  private readonly getDb = memoizy(async () => {
-    const dbDir = cacheDir() + "/aocm";
+  private readonly getMainDb = memoizy(async () => {
+    const dbDir = dataDir() + "/aocm";
     await Deno.mkdir(dbDir, { recursive: true });
     const db = new DB(dbDir + "/main.db");
     db.query(`
@@ -121,6 +122,13 @@ export class Aocm {
         session TEXT NOT NULL
       )
     `);
+    return db;
+  });
+
+  private readonly getCacheDb = memoizy(async () => {
+    const dbDir = cacheDir() + "/aocm";
+    await Deno.mkdir(dbDir, { recursive: true });
+    const db = new DB(dbDir + "/cache.db");
     db.query(`
       CREATE TABLE IF NOT EXISTS inputs (
         year INTEGER NOT NULL,
@@ -148,8 +156,8 @@ export class Aocm {
 
   readonly getInput = memoizy(
     async (year: number, day: number): Promise<string> => {
-      const db = await this.getDb();
-      const cachedResults = db.query<[string]>(
+      const cacheDb = await this.getCacheDb();
+      const cachedResults = cacheDb.query<[string]>(
         "SELECT input FROM inputs WHERE year = ? AND day = ?",
         [year, day],
       );
@@ -158,7 +166,7 @@ export class Aocm {
       }
 
       const input = await this.fetchInput(year, day);
-      db.query("INSERT INTO inputs (year, day, input) VALUES (?, ?, ?)", [
+      cacheDb.query("INSERT INTO inputs (year, day, input) VALUES (?, ?, ?)", [
         year,
         day,
         input,
