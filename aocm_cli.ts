@@ -1,6 +1,7 @@
 import {
   Command,
   CompletionsCommand,
+  ValidationError,
 } from "https://deno.land/x/cliffy@v0.24.2/command/mod.ts";
 import { writeAll } from "https://deno.land/std@0.140.0/streams/conversion.ts";
 import { getAocm } from "./aocm.ts";
@@ -9,6 +10,9 @@ await new Command()
   .name("aocm")
   .description("Helper tool for solving Advent of Code with Deno")
   .version("0.1.0")
+  .action(() => {
+    throw new ValidationError("A command is required");
+  })
   .command(
     "init",
     "Initialize a project directory",
