@@ -1,4 +1,7 @@
-import { Command } from "https://deno.land/x/cliffy@v0.24.2/command/command.ts";
+import {
+  Command,
+  CompletionsCommand,
+} from "https://deno.land/x/cliffy@v0.24.2/command/mod.ts";
 import { writeAll } from "https://deno.land/std@0.140.0/streams/conversion.ts";
 import { getAocm } from "./aocm.ts";
 
@@ -46,4 +49,5 @@ await new Command()
   .action((_options, _scriptArg) => {
     throw new Error("Not implemented yet"); // TODO
   })
+  .command("completions", new CompletionsCommand())
   .parse(Deno.args);
