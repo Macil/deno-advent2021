@@ -54,4 +54,7 @@ await new Command()
     throw new Error("Not implemented yet"); // TODO
   })
   .command("completions", new CompletionsCommand())
-  .parse(Deno.args);
+  .parse(
+    // Work around https://github.com/c4spar/deno-cliffy/issues/387
+    Deno.args.length !== 0 ? Deno.args : ["-h"],
+  );
