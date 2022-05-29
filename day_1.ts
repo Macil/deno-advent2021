@@ -2,7 +2,7 @@ import { assertEquals } from "https://deno.land/std@0.140.0/testing/asserts.ts";
 import { runPart } from "./aocm.ts";
 
 function part1(input: string) {
-  const numbers = input.trim().split("\n").map(Number);
+  const numbers = input.trimEnd().split("\n").map(Number);
   let count = 0;
   for (let i = 1; i < numbers.length; i++) {
     if (numbers[i] > numbers[i - 1]) {
@@ -41,7 +41,7 @@ const TEST_INPUT = `
 269
 260
 263
-`;
+`.slice(1);
 
 Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 7);
