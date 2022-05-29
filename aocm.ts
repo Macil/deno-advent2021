@@ -158,7 +158,7 @@ export class Aocm {
     return req.text();
   }
 
-  readonly getInput = memoizy(
+  readonly getInput: (year: number, day: number) => Promise<string> = memoizy(
     async (year: number, day: number): Promise<string> => {
       const cacheDb = await this.getCacheDb();
       const cachedResults = cacheDb.query<[string]>(
