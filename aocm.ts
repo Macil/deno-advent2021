@@ -1,8 +1,6 @@
 import { parse } from "https://deno.land/std@0.140.0/flags/mod.ts";
 import { memoizy } from "https://deno.land/x/memoizy@1.0.0/mod.ts";
-import { DB } from "https://deno.land/x/sqlite@v3.4.0/mod.ts";
-import cacheDir from "https://deno.land/x/cache_dir@v0.1.1/mod.ts";
-import dataDir from "https://deno.land/x/data_dir@v0.1.0/mod.ts";
+import { DbManager } from "./_db_manager.ts";
 
 export type Answer = string | number;
 
@@ -45,6 +43,7 @@ export function runPart(
 
 export class Aocm {
   private config: Config;
+  private dbManager = new DbManager();
   private tasksComplete = Promise.resolve();
 
   constructor(config: Partial<Config>) {
@@ -92,7 +91,7 @@ export class Aocm {
     if (AOC_SESSION) {
       return AOC_SESSION;
     }
-    const db = await this.getMainDb();
+    const db = await this.dbManager.getMainDb();
     const results = db.query<[string]>("SELECT session FROM sessions LIMIT 1");
     if (results[0]) {
       return results[0][0];
@@ -101,7 +100,7 @@ export class Aocm {
   });
 
   async setSessionCookie(session: string) {
-    const db = await this.getMainDb();
+    const db = await this.dbManager.getMainDb();
     db.transaction(() => {
       db.query("INSERT INTO sessions (session) VALUES (?)", [
         session,
@@ -110,39 +109,6 @@ export class Aocm {
       db.query("DELETE FROM sessions WHERE id != ?", [sessionId]);
     });
   }
-
-  private readonly getMainDb = memoizy(async () => {
-    const dataDir_ = dataDir();
-    if (!dataDir_) throw new Error("Could not find data directory");
-    const dbDir = dataDir_ + "/aocm";
-    await Deno.mkdir(dbDir, { recursive: true });
-    const db = new DB(dbDir + "/main.db");
-    db.query(`
-      CREATE TABLE IF NOT EXISTS sessions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        session TEXT NOT NULL
-      )
-    `);
-    return db;
-  });
-
-  private readonly getCacheDb = memoizy(async () => {
-    const cacheDir_ = cacheDir();
-    if (!cacheDir_) throw new Error("Could not find cache directory");
-    const dbDir = cacheDir_ + "/aocm";
-    await Deno.mkdir(dbDir, { recursive: true });
-    const db = new DB(dbDir + "/cache.db");
-    db.query(`
-      CREATE TABLE IF NOT EXISTS inputs (
-        year INTEGER NOT NULL,
-        day INTEGER NOT NULL,
-        input TEXT,
-        PRIMARY KEY (year, day)
-      )
-    `);
-    return db;
-  });
 
   private async fetchInput(year: number, day: number): Promise<string> {
     const url = `https://adventofcode.com/${year}/day/${day}/input`;
@@ -160,7 +126,7 @@ export class Aocm {
 
   readonly getInput: (year: number, day: number) => Promise<string> = memoizy(
     async (year: number, day: number): Promise<string> => {
-      const cacheDb = await this.getCacheDb();
+      const cacheDb = await this.dbManager.getCacheDb();
       const cachedResults = cacheDb.query<[string]>(
         "SELECT input FROM inputs WHERE year = ? AND day = ?",
         [year, day],
