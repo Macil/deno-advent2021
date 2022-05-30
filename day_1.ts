@@ -13,7 +13,7 @@ function part1(input: string) {
 }
 
 function part2(input: string) {
-  const numbers = input.trim().split("\n").map(Number);
+  const numbers = input.trimEnd().split("\n").map(Number);
   let count = 0;
   for (let i = 3; i < numbers.length; i++) {
     const first = numbers[i - 3] + numbers[i - 2] + numbers[i - 1];
