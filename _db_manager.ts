@@ -1,6 +1,6 @@
 import { DB } from "https://deno.land/x/sqlite@v3.4.0/mod.ts";
-import cacheDir from "https://deno.land/x/cache_dir@v0.1.1/mod.ts";
-import dataDir from "https://deno.land/x/data_dir@v0.1.0/mod.ts";
+import cacheDir from "https://deno.land/x/dir@1.4.0/cache_dir/mod.ts";
+import dataDir from "https://deno.land/x/dir@1.4.0/data_dir/mod.ts";
 import { memoizy } from "https://deno.land/x/memoizy@1.0.0/mod.ts";
 
 export class DbManager {
