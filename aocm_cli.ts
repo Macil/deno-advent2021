@@ -26,6 +26,57 @@ await new Command()
     "Create a script from a template for solving a day's challenge",
   )
   .arguments("<day:number>")
+  .action(async (_options, day) => {
+    const config = JSON.parse(await Deno.readTextFile(".aocmrc.json"));
+    const year = config.year;
+    if (typeof year !== "number") {
+      throw new Error("Invalid year in config .aocmrc.json");
+    }
+    const src =
+      `import { assertEquals } from "https://deno.land/std@0.141.0/testing/asserts.ts";
+import { runPart } from "./aocm.ts";
+
+function part1(input: string): number {
+  const numbers = input.trimEnd().split("\\n").map(Number);
+  throw new Error("TODO");
+}
+
+function part2(input: string): number {
+  const numbers = input.trimEnd().split("\\n").map(Number);
+  throw new Error("TODO");
+}
+
+if (import.meta.main) {
+  runPart(${year}, ${day}, 1, part1);
+  runPart(${year}, ${day}, 2, part2);
+}
+
+const TEST_INPUT = \`
+6
+7
+8
+9
+10
+\`.slice(1);
+
+Deno.test("part1", () => {
+  assertEquals(part1(TEST_INPUT), 11);
+});
+
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 12);
+});
+`;
+    const newFile = await Deno.open(`day_${day}.ts`, {
+      write: true,
+      createNew: true,
+    });
+    try {
+      await writeAll(newFile, new TextEncoder().encode(src));
+    } finally {
+      newFile.close();
+    }
+  })
   .command(
     "set-cookie",
     "Set the Advent of Code session cookie for later calls",

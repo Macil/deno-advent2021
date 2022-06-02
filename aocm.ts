@@ -2,9 +2,7 @@ import { parse } from "https://deno.land/std@0.140.0/flags/mod.ts";
 import { memoizy } from "https://deno.land/x/memoizy@1.0.0/mod.ts";
 import { DbManager } from "./_db_manager.ts";
 
-export type Answer = string | number;
-
-export type Solver = (input: string) => Answer | Promise<Answer>;
+export type Solver = (input: string) => number | Promise<number>;
 
 export interface Config {
   submit: boolean;
