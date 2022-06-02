@@ -1,7 +1,9 @@
-import { walk } from "https://deno.land/std@0.140.0/fs/walk.ts";
+import { walk } from "https://deno.land/std@0.141.0/fs/walk.ts";
 
-// TODO replace with a deno task for "deno test day_*.ts" once deno task supports globs
+// Run all of the tests in day_*.ts files. This works around the fact that
+// `deno test` by default only runs tests in files named like *test.ts.
 
+const tasks = [];
 for await (
   const entry of walk(".", {
     maxDepth: 1,
@@ -9,5 +11,6 @@ for await (
     match: [/^day_\d+\.ts$/],
   })
 ) {
-  await import("./" + entry.path);
+  tasks.push(import("./" + entry.path));
 }
+await Promise.all(tasks);
