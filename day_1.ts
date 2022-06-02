@@ -1,8 +1,12 @@
 import { assertEquals } from "https://deno.land/std@0.141.0/testing/asserts.ts";
 import { runPart } from "./aocm.ts";
 
+function parse(input: string) {
+  return input.trimEnd().split("\n").map(Number);
+}
+
 function part1(input: string) {
-  const numbers = input.trimEnd().split("\n").map(Number);
+  const numbers = parse(input);
   let count = 0;
   for (let i = 1; i < numbers.length; i++) {
     if (numbers[i] > numbers[i - 1]) {
@@ -13,7 +17,7 @@ function part1(input: string) {
 }
 
 function part2(input: string) {
-  const numbers = input.trimEnd().split("\n").map(Number);
+  const numbers = parse(input);
   let count = 0;
   for (let i = 3; i < numbers.length; i++) {
     const first = numbers[i - 3] + numbers[i - 2] + numbers[i - 1];

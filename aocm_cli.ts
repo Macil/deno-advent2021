@@ -36,13 +36,17 @@ await new Command()
       `import { assertEquals } from "https://deno.land/std@0.141.0/testing/asserts.ts";
 import { runPart } from "./aocm.ts";
 
+function parse(input: string) {
+  return input.trimEnd().split("\\n").map(Number);
+}
+
 function part1(input: string): number {
-  const numbers = input.trimEnd().split("\\n").map(Number);
+  const items = parse(input);
   throw new Error("TODO");
 }
 
 function part2(input: string): number {
-  const numbers = input.trimEnd().split("\\n").map(Number);
+  const items = parse(input);
   throw new Error("TODO");
 }
 
