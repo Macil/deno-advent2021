@@ -142,4 +142,8 @@ export class Aocm {
       return input;
     },
   );
+
+  clearData() {
+    return this.dbManager.clearData();
+  }
 }

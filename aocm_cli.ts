@@ -90,8 +90,8 @@ Deno.test("part2", () => {
     await getAocm().setSessionCookie(value);
   })
   .command("clear-data", "Forget the session cookie and cached inputs")
-  .action(() => {
-    throw new Error("Not implemented yet"); // TODO
+  .action(async () => {
+    await getAocm().clearData();
   })
   .command("get-input", "View the input for a specific day's challenge")
   .arguments("<year:number> <day:number>")
