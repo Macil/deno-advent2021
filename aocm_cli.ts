@@ -167,6 +167,7 @@ Deno.test("part2", () => {
           `--allow-net=${apiDomain}`,
           scriptArg,
           `--aocm-api-addr=${apiAddr}`,
+          ...(options.submit ? ["--submit"] : []),
         ],
       });
       const status = await p.status();
