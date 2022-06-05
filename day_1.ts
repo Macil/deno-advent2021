@@ -34,7 +34,7 @@ if (import.meta.main) {
   runPart(2021, 1, 2, part2);
 }
 
-const TEST_INPUT = `
+const TEST_INPUT = `\
 199
 200
 208
@@ -45,7 +45,7 @@ const TEST_INPUT = `
 269
 260
 263
-`.slice(1);
+`;
 
 Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 7);

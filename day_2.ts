@@ -59,14 +59,14 @@ if (import.meta.main) {
   runPart(2021, 2, 2, part2);
 }
 
-const TEST_INPUT = `
+const TEST_INPUT = `\
 forward 5
 down 5
 forward 8
 up 3
 down 8
 forward 2
-`.slice(1);
+`;
 
 Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 150);
