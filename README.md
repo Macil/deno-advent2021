@@ -5,12 +5,11 @@ This is a partial set of solutions to
 
 ## Usage
 
-First you need to load your Advent of Code session cookie.
-[You need to get this value from your browser](https://github.com/wimglenn/advent-of-code-wim/issues/1)
-after logging into Advent of code.
+You must have [aocd](https://github.com/Macil/aocd/) installed and have set the
+session cookie with it:
 
 ```
-deno run -A aocm_cli.ts set-cookie 123_COOKIE_VALUE_HERE
+aocd set-cookie COOKIE_VALUE_HERE
 ```
 
 Then you can run any day's challenge to see the answer:
