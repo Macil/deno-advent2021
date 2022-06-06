@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { runPart } from "https://deno.land/x/aocd@v0.1.0/mod.ts";
+import { runPart } from "https://deno.land/x/aocd@v1.0.0/mod.ts";
 
 function parse(input: string) {
   return input.trimEnd().split("\n").map((cmd) => {
