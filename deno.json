@@ -1,5 +1,5 @@
 {
   "tasks": {
-    "test": "deno test --allow-read=. --allow-net=deno.land"
+    "test": "deno run --allow-read=. --allow-run https://deno.land/x/aocd@v1.0.1/eachDayTestRunner.ts"
   }
 }
