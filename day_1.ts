@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.144.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.167.0/testing/asserts.ts";
 import { runPart } from "https://deno.land/x/aocd@v1.1.0/mod.ts";
 
 function parse(input: string) {
