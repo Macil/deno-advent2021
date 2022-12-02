@@ -29,10 +29,10 @@ function part1(input: string): number {
   return gamma * epsilon;
 }
 
-function _part2(input: string): number {
-  const _items = parse(input);
-  throw new Error("TODO");
-}
+// function part2(input: string): number {
+//   const items = parse(input);
+//   throw new Error("TODO");
+// }
 
 if (import.meta.main) {
   runPart(2021, 3, 1, part1);
