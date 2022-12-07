@@ -60,14 +60,24 @@ function part1(input: string): number {
     .length;
 }
 
-// function part2(input: string): number {
-//   const vents = parse(input);
-//   throw new Error("TODO");
-// }
+function part2(input: string): number {
+  const vents = parse(input);
+  const hitAmountsPerCoordinate = new Map<string, number>();
+  for (const vent of vents) {
+    for (const point of pointsAlongLine(vent)) {
+      const key = coordinateToString(point);
+      const hitAmount = hitAmountsPerCoordinate.get(key) ?? 0;
+      hitAmountsPerCoordinate.set(key, hitAmount + 1);
+    }
+  }
+  return Array.from(hitAmountsPerCoordinate.values())
+    .filter((amount) => amount >= 2)
+    .length;
+}
 
 if (import.meta.main) {
   runPart(2021, 5, 1, part1);
-  // runPart(2021, 5, 2, part2);
+  runPart(2021, 5, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -87,6 +97,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 5);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 12);
+});
