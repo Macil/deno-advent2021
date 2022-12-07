@@ -12,9 +12,11 @@ function parse(input: string): Map<number, number> {
   return lanternFishByDaysUntilReproduction;
 }
 
-function part1(input: string): number {
-  let lanternFishByDaysUntilReproduction = parse(input);
-  for (let day = 0; day < 80; day++) {
+function lanternFishCountAfterDays(
+  lanternFishByDaysUntilReproduction: Map<number, number>,
+  days: number,
+): number {
+  for (let day = 0; day < days; day++) {
     const newLanternFishByDaysUntilReproduction = new Map<number, number>();
     for (
       const [daysUntilReproduction, amount]
@@ -44,14 +46,19 @@ function part1(input: string): number {
   return totalLanternFish;
 }
 
-// function part2(input: string): number {
-//   const items = parse(input);
-//   throw new Error("TODO");
-// }
+function part1(input: string): number {
+  const lanternFishByDaysUntilReproduction = parse(input);
+  return lanternFishCountAfterDays(lanternFishByDaysUntilReproduction, 80);
+}
+
+function part2(input: string): number {
+  const lanternFishByDaysUntilReproduction = parse(input);
+  return lanternFishCountAfterDays(lanternFishByDaysUntilReproduction, 256);
+}
 
 if (import.meta.main) {
   runPart(2021, 6, 1, part1);
-  // runPart(2021, 6, 2, part2);
+  runPart(2021, 6, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -62,6 +69,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 5934);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 26984457539);
+});
