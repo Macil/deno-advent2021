@@ -1,9 +1,5 @@
-import {
-  assertEquals,
-  assertExists,
-  assertStrictEquals,
-} from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { runPart } from "https://deno.land/x/aocd@v1.5.1/mod.ts";
+import { assertEquals, assertExists, assertStrictEquals } from "@std/assert";
+import { runPart } from "@macil/aocd";
 
 const ORIGINAL_SEGMENTS_USED_BY_DIGIT: Array<string> = [
   /* 0 */ "abcdefg",
